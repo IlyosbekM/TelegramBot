@@ -20,6 +20,19 @@ Do'konlarda sotuvchi va klient o'rtasidagi qarz munosabatlarini hisoblash uchun 
 - **ℹ️ Yordam tizimi**: har bir rol uchun menyudagi "ℹ️ Yordam" tugmasi orqali kontekstli qo'llanma
 - **Bildirishnomalar**: bog'lanish, qarz, to'lov holatlari bo'yicha avtomatik xabar
 
+### 🌍 Ko'p tillilik
+- **3 til**: O'zbek / Rus / Ingliz (uz/ru/en). `/language` (yoki `/til`) buyrug'i orqali istalgan vaqtda almashtiriladi. Menyular, xabarlar, cheklar — barchasi foydalanuvchi tilida.
+- **Ko'p valyuta**: har bir do'kon o'z valyutasini belgilaydi (UZS/USD/RUB), summalar shunga mos formatlanadi.
+
+### 🚀 Ilg'or imkoniyatlar (investor-grade)
+- **📈 Analitika**: undirilish darajasi (collection rate), kechikish (aging) tahlili 4 guruhda — ASCII grafik bilan, shu oy faoliyati, eng katta qarzdorlar TOP-5 (sotuvchi + admin uchun umumiy).
+- **⭐ Ishonch bali (Trust score)**: mijozning to'lov tarixiga qarab 0–100 ball, reyting va **tavsiya etilgan kredit limiti** (fintech).
+- **🏆 Reyting (Leaderboard)**: eng ishonchli mijozlar va eng katta qarzdorlar (🥇🥈🥉 medallar bilan).
+- **📅 Bo'lib to'lash (Installments)**: qarzni N ta bo'lakka jadval bilan bo'lish, har bir bo'lakni "to'landi" deb belgilash.
+- **🧾 PDF cheklar/hisobotlar**: qarz cheki va to'liq hisobot PDF holida yuboriladi (OpenPDF).
+- **📷 QR kod**: qarz ma'lumotini QR kod rasmi qilib ulashish (ZXing).
+- **🔎 Kengaytirilgan qidiruv/filtr**: faol / muddati o'tgan / yirik qarzlar bo'yicha tezkor filtr + ism bo'yicha qidiruv.
+
 ## Texnologiyalar
 
 - Java 17
@@ -184,8 +197,10 @@ src/main/java/com/qarzbot/
 ## Keyingi qadamlar (TODO)
 
 - [ ] Liquibase/Flyway migratsiyalari
-- [ ] Excel/PDF eksport
+- [x] ~~PDF eksport~~ — qo'shildi (PDF chek + hisobot, OpenPDF)
+- [x] ~~Ko'p tilli interfeys~~ — qo'shildi (UZ/RU/EN, `/language`)
+- [x] ~~Avtomatik chek~~ — matnli + PDF chek qo'shildi
+- [x] ~~Sotuvchi statistikasi~~ — to'liq analitika (aging, collection rate, top debtors) qo'shildi
+- [x] ~~Bo'lib to'lash, Trust score, QR, Leaderboard, kengaytirilgan filtr~~ — qo'shildi
 - [ ] Foiz hisoblash (qarz uzaytirilganda)
-- [ ] Ko'p tilli interfeys (UZ/RU)
-- [x] ~~Avtomatik chek (matnli)~~ — qo'shildi (rasm/PDF chek hali TODO)
-- [x] ~~Sotuvchi statistikasi (matnli)~~ — qo'shildi (grafiklar hali TODO)
+- [ ] Excel eksport, push-bildirishnoma sozlamalari

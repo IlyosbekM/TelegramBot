@@ -207,6 +207,19 @@ Bot kodi GoF pattern'lar bo'yicha bo'lingan (god-class'lar yo'q):
 - **Presenter** — `handler/seller/SellerViewService.java`: sotuvchi hisobot/ro'yxat render'lash.
 - **Factory** — `util/KeyboardFactory.java`.
 
+## Qo'shilgan feature'lar (2026-06-24)
+
+Ko'p til (uz/ru/en) poydevori + quyidagi feature'lar (har biri auto-registered `@Component`, markaziy wiring shart emas):
+- **Analitika**: `service/AnalyticsService` + `handler/seller/AnalyticsPresenter` (aging, collection rate, top debtors). Menyuda "📈 Analitika" (sotuvchi+admin).
+- **Trust score / Leaderboard**: `service/TrustScoreService`, `service/LeaderboardService` + `callback/seller/{TrustScore,Leaderboard}CallbackHandler` (prefix `trust:`, `lead:`).
+- **Bo'lib to'lash**: `entity/Installment` + `repository/InstallmentRepository` + `service/InstallmentService` + `callback/seller/InstallmentCallbackHandler` (`inst:`) + `conversation/InstallmentConversationFlow` (`INST_`).
+- **PDF/QR**: `service/PdfReceiptService` (OpenPDF), `service/QrCodeService` (ZXing) + `callback/common/{Pdf,Qr}CallbackHandler` (`pdf:`, `qr:`); `BotMessenger.sendDocument/sendPhoto` orqali.
+- **Qidiruv/filtr**: `service/DebtSearchService` + `callback/seller/DebtFilterCallbackHandler` (`filter:`) + `conversation/DebtFilterConversationFlow` (`FILTER_`).
+- i18n: `messages_{uz,ru,en}.properties` (MessageFormat — {n} bo'lgan qiymatlarda `'` → `''`). Til almashtirish: `/language` yoki `/til` → `KeyboardFactory.languageMenu()` → `LanguageCallbackHandler` (`lang:`).
+- **Yangi Maven dep**: OpenPDF 1.3.43, ZXing core+javase 3.5.3.
+
+> ⚙️ DevOps: alohida git repo, `dev`/`prod` branch, GitHub Actions CI (`mvn verify` + vite) + CD (Docker → GHCR, self-hosted deploy `if vars.ENABLE_SELF_HOSTED_DEPLOY`). Maxfiy qiymatlar `.secrets.yml` (gitignore) / `.env` / GitHub Secrets'da. **Tez compile-gate**: hostda JDK17 (`~/.jdks/corretto-17.0.16`) + offline `mvn -o clean compile` (deps `~/.m2` kesh) — Docker/proxy ortidagi TLS muammosini chetlab o'tadi.
+
 ## Web admin panel
 
 Brauzer orqali boshqaruv: **backend REST API** + **alohida React frontend**.
