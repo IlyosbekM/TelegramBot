@@ -1,0 +1,47 @@
+# ============================================================
+#  QarzBot — bitta buyruq bilan ishga tushirish:  docker compose up -d
+#  Qiymatlar shu papkadagi .env faylidan olinadi (.env.example dan nusxa oling).
+# ============================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: qarzbot-db
+    environment:
+      POSTGRES_DB: qarzbot
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - qarzbot_pgdata:/var/lib/postgresql/data
+    # Host 5432 ataylab OCHILMADI — PC'da 5432 band (boshqa postgres ishlayapti).
+    # App bazaga Compose ichki tarmog'i orqali (db:5432) ulanadi, host porti shart emas.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d qarzbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    # Mahalliy build:  docker compose up -d --build
+    build: .
+    # Yoki GHCR'dan tayyor image (CD chiqargan):
+    # image: ghcr.io/ilyosbekm/telegrambot:latest
+    container_name: qarzbot-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/qarzbot
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_USERNAME: ${BOT_USERNAME:-Qarz_hisoblash_bot}
+      ADMIN_IDS: ${ADMIN_IDS}
+      WEB_ADMIN_PASSWORD: ${WEB_ADMIN_PASSWORD:-admin123}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  qarzbot_pgdata:

@@ -1,0 +1,103 @@
+name: CD
+
+# prod branch'ga push bo'lganda ishga tushadi.
+#   • image      → GitHub'ning BEPUL runner'ida Docker image yig'ib GHCR'ga joylaydi (ixtiyoriy artefakt)
+#   • deploy     → SIZNING doimo yoniq PC'ingizdagi self-hosted runner'da botni ishga tushiradi
+on:
+  push:
+    branches: [prod]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-prod
+  cancel-in-progress: false
+
+jobs:
+  # ------------------------------------------------------------------
+  #  (A) GitHub-hosted: Docker image yig'ib GHCR'ga joylash (ixtiyoriy)
+  #      Server olsangiz — shu image'ni serverda `docker compose pull` bilan olasiz.
+  # ------------------------------------------------------------------
+  image:
+    name: Build & push image → GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image nomini kichik harfga keltirish
+        id: img
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta (teglar)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.img.outputs.name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ------------------------------------------------------------------
+  #  (B) Self-hosted: SIZNING PC'ingizda deploy (server o'rnida)
+  #      Talablar (PC'da bir marta sozlanadi):
+  #        1) Docker Desktop o'rnatilgan va ishlab turibdi
+  #        2) GitHub repo → Settings → Actions → Runners → "New self-hosted runner"
+  #           (Windows x64) — ko'rsatmalarga amal qiling, "qarzbot" label'i bilan
+  #        3) Runner'ni xizmat (service) sifatida o'rnating — PC yonsa avtomatik ishlaydi
+  #        4) Repo → Settings → Secrets'ga qo'shing:
+  #           BOT_TOKEN, ADMIN_IDS, DB_PASSWORD, WEB_ADMIN_PASSWORD (xohlasangiz BOT_USERNAME, DB_USERNAME)
+  # ------------------------------------------------------------------
+  deploy:
+    name: Deploy to my PC (self-hosted)
+    needs: image
+    # Runner o'rnatmaguningizcha bu job O'TKAZIB YUBORILADI (CD yashil bo'ladi).
+    # Yoqish: repo → Settings → Secrets and variables → Actions → Variables →
+    #         ENABLE_SELF_HOSTED_DEPLOY = true  (va self-hosted runner o'rnatilgan bo'lsin)
+    if: ${{ vars.ENABLE_SELF_HOSTED_DEPLOY == 'true' }}
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: .env faylini Secrets'dan yozish
+        shell: bash
+        run: |
+          cat > .env <<EOF
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          BOT_USERNAME=${{ secrets.BOT_USERNAME || 'Qarz_hisoblash_bot' }}
+          ADMIN_IDS=${{ secrets.ADMIN_IDS }}
+          DB_USERNAME=${{ secrets.DB_USERNAME || 'postgres' }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          WEB_ADMIN_PASSWORD=${{ secrets.WEB_ADMIN_PASSWORD }}
+          EOF
+
+      - name: Docker compose bilan ishga tushirish (build + up)
+        shell: bash
+        run: |
+          docker compose up -d --build
+          docker compose ps
+
+      - name: Eski image'larni tozalash
+        shell: bash
+        run: docker image prune -f

@@ -1,0 +1,43 @@
+spring:
+  # Mahalliy (local) maxfiy qiymatlar (token, admin-ids, DB paroli) .secrets.yml da turadi —
+  # u .gitignore qilingan, hech qachon GitHub'ga ketmaydi. "optional:" → CI/prod bu faylsiz ham
+  # ishga tushadi (ular qiymatlarni environment / GitHub Secrets orqali oladi).
+  config:
+    import: optional:file:./.secrets.yml
+  application:
+    name: qarz-bot
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/qarzbot}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        # Bot thread'lari web-request emas (OSIV yo'q). Tranzaksiyadan tashqarida
+        # LAZY bog'liqliklarni (BotUser.shop, Debt.client/seller, Reminder.debt, ...)
+        # xavfsiz yuklash uchun. Hot-path'larda baribir JOIN FETCH ishlatiladi.
+        enable_lazy_load_no_trans: true
+    open-in-view: false
+    show-sql: false
+
+telegram:
+  bot:
+    username: ${BOT_USERNAME:Qarz_hisoblash_bot}
+    token: ${BOT_TOKEN:}
+    admin-ids: ${ADMIN_IDS:}
+
+# Web admin panel (http://localhost:8080)
+web:
+  admin:
+    password: ${WEB_ADMIN_PASSWORD:admin123}
+
+logging:
+  level:
+    root: INFO
+    com.qarzbot: DEBUG
+    org.telegram: INFO

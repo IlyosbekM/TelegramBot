@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Maven sozlamalari — dependencylarni tezroq yuklab olish uchun.
+
+    O'rnatish (Windows):
+        Bu faylni shu yerga ko'chiring:  C:\Users\Administrator\.m2\settings.xml
+
+    PowerShell bilan:
+        New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.m2" | Out-Null
+        Copy-Item "settings.xml" "$env:USERPROFILE\.m2\settings.xml" -Force
+
+    Shundan keyin:
+        mvn clean install -T 4 -U
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <mirrors>
+        <!--
+            mirrorOf=* — HAMMA repolarni (jumladan ichki GitLab/Nexus)
+            Aliyun ga yo'naltiradi. Agar ichki paketlar kerak bo'lsa,
+            `external:*` yoki aniq repo IDlarini istisno qiling.
+        -->
+        <mirror>
+            <id>aliyun-public</id>
+            <name>Aliyun Public Mirror</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
+
+    <profiles>
+        <profile>
+            <id>fast-repos</id>
+            <repositories>
+                <repository>
+                    <id>aliyun-public</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+                <repository>
+                    <id>aliyun-spring</id>
+                    <url>https://maven.aliyun.com/repository/spring</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>aliyun-plugin</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>fast-repos</activeProfile>
+    </activeProfiles>
+</settings>

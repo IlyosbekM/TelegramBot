@@ -1,0 +1,13 @@
+# Repo ichida hamma matn fayllar LF bilan saqlanadi (CI Linux'da ishlaydi).
+* text=auto eol=lf
+
+# Windows skriptlari CRLF bo'lib qolsin
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Binar fayllar
+*.png   binary
+*.jpg   binary
+*.jar   binary
+*.ico   binary

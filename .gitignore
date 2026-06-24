@@ -1,0 +1,43 @@
+# ===== Maxfiy qiymatlar (HECH QACHON commit qilinmaydi) =====
+.secrets.yml
+.env
+.env.*
+!.env.example
+application-local.yml
+application-secret.yml
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*.log
+*.original
+
+# ===== Loglar =====
+*.log
+logs/
+
+# ===== IDE =====
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# ===== Frontend (React + Vite) =====
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Local tool state =====
+.claude/settings.local.json

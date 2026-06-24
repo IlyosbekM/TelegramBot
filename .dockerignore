@@ -1,0 +1,18 @@
+# Build kontekstini kichik tutish — keraksiz narsalar image'ga ketmaydi
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.log
+*.iml
+.secrets.yml
+.env
+.env.*
+frontend/node_modules/
+frontend/dist/
+node_modules/
+assets/
+README.md
+CLAUDE.md
+bot.log
