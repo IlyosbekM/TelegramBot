@@ -49,6 +49,16 @@ jobs:
             type=raw,value=latest
             type=sha,format=short
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build jar (CI toza tarmoqda — proxy yo'q)
+        run: mvn -B -ntp clean package -DskipTests
+
       - name: Build & push
         uses: docker/build-push-action@v6
         with:

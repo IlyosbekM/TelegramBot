@@ -23,10 +23,11 @@ services:
     restart: unless-stopped
 
   app:
-    # Mahalliy build:  docker compose up -d --build
+    # Runtime image — Dockerfile oldindan yig'ilgan target/qarz-bot-1.0.0.jar dan foydalanadi.
+    # AVVAL jar yig'ing:  mvn -o clean package -DskipTests
+    # So'ng:              docker compose up -d --build
     build: .
-    # Yoki GHCR'dan tayyor image (CD chiqargan):
-    # image: ghcr.io/ilyosbekm/telegrambot:latest
+    image: qarzbot:local
     container_name: qarzbot-app
     depends_on:
       db:

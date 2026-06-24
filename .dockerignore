@@ -1,5 +1,6 @@
 # Build kontekstini kichik tutish — keraksiz narsalar image'ga ketmaydi
-target/
+target/*
+!target/qarz-bot-1.0.0.jar
 .git/
 .github/
 .idea/
