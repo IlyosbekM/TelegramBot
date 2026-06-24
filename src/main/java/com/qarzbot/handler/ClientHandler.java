@@ -149,6 +149,10 @@ public class ClientHandler {
                 InlineKeyboardButton.builder().text(loc.t(client, "client.btn_pay")).callbackData("paydebt:" + debtId).build(),
                 InlineKeyboardButton.builder().text(loc.t(client, "client.btn_payments")).callbackData("mypay:" + debtId).build()
         ));
+        rows.add(new InlineKeyboardRow(
+                InlineKeyboardButton.builder().text("🧾 PDF").callbackData("pdf:debt:" + debtId).build(),
+                InlineKeyboardButton.builder().text("📷 QR").callbackData("qr:debt:" + debtId).build()
+        ));
         return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 

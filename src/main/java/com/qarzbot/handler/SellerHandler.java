@@ -5,6 +5,8 @@ import com.qarzbot.entity.BotUser;
 import com.qarzbot.entity.Product;
 import com.qarzbot.entity.Shop;
 import com.qarzbot.handler.seller.SellerViewService;
+import com.qarzbot.handler.seller.AnalyticsPresenter;
+import com.qarzbot.service.AnalyticsService;
 import com.qarzbot.i18n.Lang;
 import com.qarzbot.i18n.Loc;
 import com.qarzbot.i18n.Menus;
@@ -31,6 +33,8 @@ public class SellerHandler {
     private final HelpService helpService;
     private final Menus menus;
     private final Loc loc;
+    private final AnalyticsService analyticsService;
+    private final AnalyticsPresenter analyticsPresenter;
 
     public void handle(BotUser seller, Message message) {
         Lang lang = Lang.fromStored(seller.getLanguage());
@@ -59,6 +63,7 @@ public class SellerHandler {
             case "🧾 Tarix"             -> view.showAudit(message, shop);
             case "⏰ Eslatma yuborish"  -> view.sendReminders(message, shop);
             case "📈 Statistika"        -> view.showStatistics(message, shop);
+            case "📈 Analitika"         -> showAnalytics(message, shop, seller);
             case "🛒 Mahsulotlar"       -> showProducts(message, shop, seller);
             case "ℹ️ Yordam"            -> messenger.replyMarkdown(message, helpService.sellerHelp(lang));
             case "📢 Xabar yuborish" -> {
@@ -75,6 +80,17 @@ public class SellerHandler {
             }
             default -> messenger.reply(message, loc.t(seller, "common.menu_select"));
         }
+    }
+
+    private void showAnalytics(Message message, Shop shop, BotUser seller) {
+        Lang lang = Lang.fromStored(seller.getLanguage());
+        var snapshot = analyticsService.forShop(shop);
+        messenger.execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(analyticsPresenter.render(snapshot, lang))
+                .parseMode("Markdown")
+                .replyMarkup(KeyboardFactory.analyticsActions())
+                .build());
     }
 
     private void showProducts(Message message, Shop shop, BotUser seller) {

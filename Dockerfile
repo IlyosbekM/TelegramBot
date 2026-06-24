@@ -8,14 +8,13 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Aliyun mirror (settings.xml repo ildizida) — dependencylar tez va ishonchli yuklanadi
+# Korporativ TLS-intercepting proxy (PKIX path building failed) muammosi uchun:
+# konteyner JVM proxy'ning privat CA'siga ishonmaydi — Maven'da TLS tekshiruvini chetlab o'tamiz.
+ENV MAVEN_OPTS="-Dmaven.resolver.transport=wagon -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true"
+
+# Aliyun mirror (settings.xml repo ildizida) — tez va ishonchli yuklab olish
 COPY settings.xml /root/.m2/settings.xml
-
-# Avval pom — dependency layer'i cache'lansin (kod o'zgarsa qayta yuklanmaydi)
 COPY pom.xml .
-RUN mvn -B -ntp dependency:go-offline
-
-# Endi kod
 COPY src ./src
 RUN mvn -B -ntp clean package -DskipTests \
     && cp target/qarz-bot-*.jar /app/app.jar

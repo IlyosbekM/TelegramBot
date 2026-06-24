@@ -77,6 +77,14 @@ public class UpdateRouter {
             sendHelp(message.getChatId(), user);
             return;
         }
+        if ("/language".equals(text) || "/til".equals(text) || "/lang".equals(text)) {
+            messenger.execute(SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text(loc.t(user, "lang.choose"))
+                    .replyMarkup(KeyboardFactory.languageMenu())
+                    .build());
+            return;
+        }
 
         switch (user.getRole()) {
             case ADMIN -> adminHandler.handle(user, message);

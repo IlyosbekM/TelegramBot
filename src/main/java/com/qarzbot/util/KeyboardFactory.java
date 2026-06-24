@@ -32,7 +32,7 @@ public class KeyboardFactory {
                 rows.add(row(Loc.tr(lang, "menu.admin.add_shop"), Loc.tr(lang, "menu.admin.shops")));
                 rows.add(row(Loc.tr(lang, "menu.admin.users"), Loc.tr(lang, "menu.admin.report")));
                 rows.add(row(Loc.tr(lang, "menu.admin.settings"), Loc.tr(lang, "menu.help")));
-                rows.add(row(Loc.tr(lang, "menu.admin.broadcast")));
+                rows.add(row(Loc.tr(lang, "menu.admin.broadcast"), Loc.tr(lang, "menu.admin.analytics")));
             }
             case SELLER -> {
                 rows.add(row(Loc.tr(lang, "menu.seller.add_debt"), Loc.tr(lang, "menu.seller.debts")));
@@ -41,6 +41,7 @@ public class KeyboardFactory {
                 rows.add(row(Loc.tr(lang, "menu.seller.statistics"), Loc.tr(lang, "menu.seller.history")));
                 rows.add(row(Loc.tr(lang, "menu.seller.send_reminder"), Loc.tr(lang, "menu.help")));
                 rows.add(row(Loc.tr(lang, "menu.seller.products"), Loc.tr(lang, "menu.seller.broadcast")));
+                rows.add(row(Loc.tr(lang, "menu.seller.analytics")));
             }
             case CLIENT -> {
                 rows.add(row(Loc.tr(lang, "menu.client.my_debts"), Loc.tr(lang, "menu.client.payment_history")));
@@ -107,6 +108,14 @@ public class KeyboardFactory {
                 inline("📜 Tarix", "history:" + debtId),
                 inline("⏰ Eslatma", "remind:" + debtId)
         ));
+        rows.add(new InlineKeyboardRow(
+                inline("🧾 PDF", "pdf:debt:" + debtId),
+                inline("📷 QR", "qr:debt:" + debtId)
+        ));
+        rows.add(new InlineKeyboardRow(
+                inline("📅 Bo'lib to'lash", "inst:start:" + debtId),
+                inline("📋 Jadval", "inst:view:" + debtId)
+        ));
         return InlineKeyboardMarkup.builder()
                 .keyboard(rows)
                 .build();
@@ -142,6 +151,10 @@ public class KeyboardFactory {
         rows.add(new InlineKeyboardRow(
                 inline("📋 Qarzlari", "clientdebts:" + clientTelegramId),
                 inline("📊 To'liq hisobot", "statement:" + clientTelegramId)
+        ));
+        rows.add(new InlineKeyboardRow(
+                inline("⭐ Ishonch ball", "trust:" + clientTelegramId),
+                inline("📄 PDF hisobot", "pdf:statement:" + clientTelegramId)
         ));
         return InlineKeyboardMarkup.builder()
                 .keyboard(rows)
@@ -274,6 +287,22 @@ public class KeyboardFactory {
                     inline("🏪 " + s.getName(), "setseller:" + userId + ":" + s.getId())
             ));
         }
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
+    }
+
+    /** Sotuvchi analitika ekrani uchun: reyting (leaderboard) + tezkor filtrlar (inline). */
+    public static InlineKeyboardMarkup analyticsActions() {
+        List<InlineKeyboardRow> rows = new ArrayList<>();
+        rows.add(new InlineKeyboardRow(
+                inline("🏆 Ishonchli mijozlar", "lead:reliable"),
+                inline("💸 Yirik qarzdorlar", "lead:debtors")
+        ));
+        rows.add(new InlineKeyboardRow(
+                inline("📋 Faol", "filter:active"),
+                inline("⚠️ Muddati o'tgan", "filter:overdue"),
+                inline("💰 Yirik", "filter:big")
+        ));
+        rows.add(new InlineKeyboardRow(inline("🔍 Mijoz qidirish", "filter:search")));
         return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 

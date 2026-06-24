@@ -8,6 +8,8 @@ import com.qarzbot.i18n.Lang;
 import com.qarzbot.i18n.Loc;
 import com.qarzbot.i18n.Menus;
 import com.qarzbot.service.DebtService;
+import com.qarzbot.service.AnalyticsService;
+import com.qarzbot.handler.seller.AnalyticsPresenter;
 import com.qarzbot.service.ShopRequestService;
 import com.qarzbot.service.ShopService;
 import com.qarzbot.service.UserService;
@@ -33,6 +35,8 @@ public class AdminHandler {
     private final BotMessenger messenger;
     private final Menus menus;
     private final Loc loc;
+    private final AnalyticsService analyticsService;
+    private final AnalyticsPresenter analyticsPresenter;
 
     public void handle(BotUser admin, Message message) {
         Lang lang = Lang.fromStored(admin.getLanguage());
@@ -45,6 +49,7 @@ public class AdminHandler {
             }
             case "🏪 Do'konlar" -> showShops(message, admin);
             case "📊 Umumiy hisobot" -> showOverallReport(message, admin);
+            case "📈 Analitika" -> showAnalytics(message, admin);
             case "👥 Foydalanuvchilar" -> showUsers(message, admin);
             case "⚙️ Sozlamalar" -> showSettings(message, admin);
             case "ℹ️ Yordam" -> messenger.replyMarkdown(message, helpService.adminHelp(lang));
@@ -85,6 +90,12 @@ public class AdminHandler {
         }
         String report = loc.t(admin, "admin.report", shops.size(), active, MessageFormatter.money(total, lang));
         messenger.replyMarkdown(message, report);
+    }
+
+    private void showAnalytics(Message message, BotUser admin) {
+        Lang lang = Lang.fromStored(admin.getLanguage());
+        var snapshot = analyticsService.forShops(shopService.findAll());
+        messenger.replyMarkdown(message, analyticsPresenter.render(snapshot, lang));
     }
 
     private void showUsers(Message message, BotUser admin) {
