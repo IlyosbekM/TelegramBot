@@ -116,6 +116,9 @@ public class KeyboardFactory {
                 inline("📅 Bo'lib to'lash", "inst:start:" + debtId),
                 inline("📋 Jadval", "inst:view:" + debtId)
         ));
+        rows.add(new InlineKeyboardRow(
+                inline("↩️ To'lovni qaytarish", "payundo:ask:" + debtId)
+        ));
         return InlineKeyboardMarkup.builder()
                 .keyboard(rows)
                 .build();
@@ -248,6 +251,26 @@ public class KeyboardFactory {
         return InlineKeyboardMarkup.builder()
                 .keyboard(List.of(row))
                 .build();
+    }
+
+    /** Sotuvchi "📥 So'rovlar" ekrani ostidagi qo'shimcha bo'limlar (va'dalar, e'tirozlar). */
+    public static InlineKeyboardMarkup sellerRequestExtras() {
+        List<InlineKeyboardRow> rows = new ArrayList<>();
+        rows.add(new InlineKeyboardRow(
+                inline("🤝 Va'dalar", "vada:list"),
+                inline("⚠️ E'tirozlar", "etiroz:list")
+        ));
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
+    }
+
+    /** Admin "⚙️ Sozlamalar" ekrani amallari: Excel hisobot + to'liq zaxira nusxa. */
+    public static InlineKeyboardMarkup adminSettingsActions() {
+        List<InlineKeyboardRow> rows = new ArrayList<>();
+        rows.add(new InlineKeyboardRow(
+                inline("📥 Excel hisobot", "xls:admin"),
+                inline("💾 Zaxira nusxa", "backup:run")
+        ));
+        return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 
     // Admin: choose broadcast target audience

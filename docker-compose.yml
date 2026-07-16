@@ -1,7 +1,17 @@
 # ============================================================
-#  QarzBot — bitta buyruq bilan ishga tushirish:  docker compose up -d
+#  QarzBot — TO'LIQ stack bitta buyruq bilan:   .\start.ps1   (Windows)
+#                                               ./start.sh    (Linux/Mac)
+#  Skript avval jar + frontend dist'ni HOST'da yig'adi (TLS proxy sababli),
+#  so'ng:  docker compose up -d --build
 #  Qiymatlar shu papkadagi .env faylidan olinadi (.env.example dan nusxa oling).
+#
+#  Servislar:  db (Postgres 16) → app (bot + REST API, :8080) → web (admin panel, :3000)
 # ============================================================
+
+# Compose project nomi — Docker Desktop'da barcha konteyner/volume'lar
+# bitta "qarzbot" guruhi (papkasi) ostida ko'rinadi, boshqa loyihalar
+# (callcenter, compreface, ...) bilan aralashmaydi.
+name: qarzbot
 
 services:
   db:
@@ -11,6 +21,7 @@ services:
       POSTGRES_DB: qarzbot
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      TZ: ${TZ:-Asia/Tashkent}
     volumes:
       - qarzbot_pgdata:/var/lib/postgresql/data
     # Host 5432 ataylab OCHILMADI — PC'da 5432 band (boshqa postgres ishlayapti).
@@ -40,8 +51,31 @@ services:
       BOT_USERNAME: ${BOT_USERNAME:-Qarz_hisoblash_bot}
       ADMIN_IDS: ${ADMIN_IDS}
       WEB_ADMIN_PASSWORD: ${WEB_ADMIN_PASSWORD:-admin123}
+      # Scheduler'lar (eslatma 09:00, va'da 09:15/09:45, xulosa 20:00, haftalik Excel)
+      # mahalliy vaqtda ishlashi uchun — aks holda konteyner UTC bo'lardi.
+      TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8080:8080"
+    # temurin image'da curl yo'q — bash'ning /dev/tcp orqali TCP tekshiruvi kifoya.
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    # Admin panel — nginx statik dist + /api proxy (app:8080).
+    # AVVAL dist yig'ing:  cd frontend && npm run build   (start.ps1 buni o'zi qiladi)
+    build: ./frontend
+    image: qarzbot-web:local
+    container_name: qarzbot-web
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:80"
     restart: unless-stopped
 
 volumes:

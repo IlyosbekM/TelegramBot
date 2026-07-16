@@ -26,11 +26,12 @@ public class Menus {
             // admin
             "menu.admin.add_shop", "menu.admin.shops", "menu.admin.users",
             "menu.admin.report", "menu.admin.settings", "menu.help", "menu.admin.broadcast",
+            "menu.admin.analytics",
             // seller
             "menu.seller.add_debt", "menu.seller.debts", "menu.seller.clients",
             "menu.seller.search", "menu.seller.requests", "menu.seller.report",
             "menu.seller.statistics", "menu.seller.history", "menu.seller.send_reminder",
-            "menu.seller.products", "menu.seller.broadcast",
+            "menu.seller.products", "menu.seller.broadcast", "menu.seller.analytics",
             // client
             "menu.client.my_debts", "menu.client.payment_history", "menu.client.shops",
             "menu.client.shop_search", "menu.client.open_shop", "menu.client.settings",

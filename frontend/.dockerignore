@@ -1,0 +1,4 @@
+# Faqat dist/ va nginx.conf image'ga kiradi — node_modules (yuzlab MB) kirmaydi.
+*
+!dist
+!nginx.conf

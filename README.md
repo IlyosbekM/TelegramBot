@@ -32,6 +32,11 @@ Do'konlarda sotuvchi va klient o'rtasidagi qarz munosabatlarini hisoblash uchun 
 - **🧾 PDF cheklar/hisobotlar**: qarz cheki va to'liq hisobot PDF holida yuboriladi (OpenPDF).
 - **📷 QR kod**: qarz ma'lumotini QR kod rasmi qilib ulashish (ZXing).
 - **🔎 Kengaytirilgan qidiruv/filtr**: faol / muddati o'tgan / yirik qarzlar bo'yicha tezkor filtr + ism bo'yicha qidiruv.
+- **🤝 To'lov va'dasi**: mijoz qarzni to'lash sanasini va'da qiladi — sotuvchilar xabardor bo'ladi, bot va'da kunida mijozga eslatadi, ertasiga bajarilgan/buzilganini avtomatik aniqlab (KEPT/BROKEN) ikkala tomonga xabar beradi.
+- **⚠️ E'tiroz (dispute)**: mijoz noto'g'ri deb hisoblagan qarziga sabab yozib e'tiroz bildiradi — sotuvchi qabul qiladi (so'ng qarzni tahrirlaydi) yoki sabab ko'rsatib rad etadi; hammasi audit tarixida.
+- **↩️ To'lovni bekor qilish**: sotuvchi xato kiritilgan OXIRGI to'lovni 24 soat ichida, tasdiq bosqichi bilan bekor qiladi — qoldiq/holat qayta hisoblanadi, mijozga xabar boradi, audit yoziladi.
+- **📥 Excel eksport**: sotuvchi uchun 3 varaqli .xlsx (Qarzlar / Mijozlar / To'lovlar 90 kun), admin uchun barcha do'konlar bo'yicha hisobot; har dushanba 08:00 da sotuvchilarga avtomatik haftalik Excel.
+- **💾 To'liq zaxira nusxa**: admin bitta tugma bilan butun bazani JSON (ZIP arxiv) ko'rinishida yuklab oladi.
 
 ## Texnologiyalar
 
@@ -91,16 +96,31 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-## 🐳 Docker bilan ishga tushirish (eng oson yo'l)
+## 🐳 Docker bilan ishga tushirish (eng oson yo'l — BITTA buyruq)
 
-PostgreSQL + bot bitta buyruq bilan ko'tariladi:
+To'liq stack (PostgreSQL + bot/REST API + web admin panel) bitta buyruq bilan:
 
-```bash
-cp .env.example .env       # .env ni to'ldiring (BOT_TOKEN, ADMIN_IDS, parollar)
-docker compose up -d --build
+```powershell
+# Windows
+.\start.ps1
 ```
 
-To'xtatish: `docker compose down` · Loglar: `docker compose logs -f app`
+```bash
+# Linux / Mac
+./start.sh
+```
+
+Skript o'zi: `.env` yo'q bo'lsa `.env.example` dan yaratadi (to'ldirishni so'raydi) → jar'ni host'da yig'adi (`mvn -o`, kerak bo'lsa online fallback) → frontend'ni yig'adi (`npm run build`) → `docker compose up -d --build`.
+
+| Servis | Konteyner | Manzil |
+|--------|-----------|--------|
+| PostgreSQL 16 | `qarzbot-db` | faqat ichki tarmoq (`db:5432`) |
+| Bot + REST API | `qarzbot-app` | `http://localhost:8080` |
+| Web admin (nginx) | `qarzbot-web` | `http://localhost:3000` (`.env` → `WEB_PORT`) |
+
+Boshqa buyruqlar: to'xtatish `.\start.ps1 -Down` (yoki `docker compose down`) · qayta ko'tarish (yig'masdan) `.\start.ps1 -SkipBuild` · loglar `docker compose logs -f app`
+
+> ℹ️ Jar va frontend `dist/` **host'da** yig'iladi, Docker image'lar faqat tayyor artefaktni ishlatadi — korporativ TLS proxy ortida konteyner ichida Maven/npm yuklab ololmaydi (PKIX). Scheduler'lar mahalliy vaqtda ishlashi uchun konteynerlarga `TZ=Asia/Tashkent` beriladi (`.env` da o'zgartirsa bo'ladi). Web panel nginx orqali `/api` ni `app:8080` ga proxy qiladi — CORS/cookie muammosi yo'q.
 
 ## 🌿 Branch strategiyasi va CI/CD (GitHub Actions)
 
@@ -174,7 +194,9 @@ src/main/java/com/qarzbot/
 │   ├── ShopMembership.java         # mijoz↔do'kon bog'lanishi (PENDING/ACCEPTED/REJECTED)
 │   ├── PaymentRequest.java         # mijoz to'lov so'rovi (sotuvchi tasdiqlaydi)
 │   ├── AuditLog.java               # amallar tarixi
-│   └── Product.java, Reminder.java # (Product hozircha ishlatilmaydi)
+│   ├── PaymentPromise.java         # mijoz to'lov va'dasi (OPEN/KEPT/BROKEN)
+│   ├── Dispute.java                # qarzga e'tiroz (OPEN/ACCEPTED/REJECTED)
+│   └── Product.java, Reminder.java, Installment.java
 ├── repository/                    # Spring Data JPA repositorylari (JOIN FETCH bilan)
 ├── service/                       # Business logic
 │   ├── MembershipService, PaymentRequestService, AuditService
@@ -188,9 +210,14 @@ src/main/java/com/qarzbot/
 └── util/                          # KeyboardFactory, MessageFormatter
 ```
 
-## Eslatma rejimi
+## Eslatma rejimi (schedulerlar)
 
-- Har kuni soat **09:00** da muddati yaqinlashgan (3 kun ichida) va o'tgan qarzlar uchun avtomatik eslatma
+- **08:30** — muddati o'tgan ACTIVE qarzlar avtomatik OVERDUE holatiga o'tkaziladi
+- **09:00** — muddati yaqinlashgan (3 kun ichida) va o'tgan qarzlar uchun avtomatik eslatma
+- **09:15** — bugun va'da qilingan to'lovlar bo'yicha mijozlarga eslatma
+- **09:45** — muddati o'tgan va'dalar KEPT/BROKEN deb baholanadi, ikkala tomonga xabar
+- **20:00** — sotuvchilarga kunlik xulosa
+- **Dushanba 08:00** — sotuvchilarga haftalik Excel hisobot
 - Mijoz **⚙️ Sozlamalar** orqali avto-eslatmani o'chirib qo'ysa, unga eslatma yuborilmaydi (lekin muddati o'tganda sotuvchiga baribir xabar boradi)
 - Har **5 daqiqada** rejalashtirilgan eslatmalar yuboriladi
 
@@ -202,5 +229,7 @@ src/main/java/com/qarzbot/
 - [x] ~~Avtomatik chek~~ — matnli + PDF chek qo'shildi
 - [x] ~~Sotuvchi statistikasi~~ — to'liq analitika (aging, collection rate, top debtors) qo'shildi
 - [x] ~~Bo'lib to'lash, Trust score, QR, Leaderboard, kengaytirilgan filtr~~ — qo'shildi
+- [x] ~~Excel eksport~~ — qo'shildi (bot ichida .xlsx + haftalik avtomatik hisobot)
+- [x] ~~To'lov va'dasi, e'tiroz (dispute), to'lovni bekor qilish, to'liq zaxira nusxa~~ — qo'shildi
 - [ ] Foiz hisoblash (qarz uzaytirilganda)
-- [ ] Excel eksport, push-bildirishnoma sozlamalari
+- [ ] Push-bildirishnoma sozlamalari

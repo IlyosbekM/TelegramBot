@@ -218,7 +218,20 @@ Ko'p til (uz/ru/en) poydevori + quyidagi feature'lar (har biri auto-registered `
 - i18n: `messages_{uz,ru,en}.properties` (MessageFormat — {n} bo'lgan qiymatlarda `'` → `''`). Til almashtirish: `/language` yoki `/til` → `KeyboardFactory.languageMenu()` → `LanguageCallbackHandler` (`lang:`).
 - **Yangi Maven dep**: OpenPDF 1.3.43, ZXing core+javase 3.5.3.
 
+## Qo'shilgan feature'lar (2026-07-15)
+
+4 ta yangi feature (har biri auto-registered `@Component`; reply-menyu O'ZGARMAGAN — kirish nuqtalari mavjud ekranlardagi inline tugmalar):
+- **To'lov va'dasi**: `entity/PaymentPromise` (OPEN/KEPT/BROKEN) + `repository/PaymentPromiseRepository` + `service/PromiseService` + `callback/common/PromiseCallbackHandler` (`vada:new:`, `vada:list`) + `conversation/PromiseConversationFlow` (`VADA_DATE:`) + `scheduler/PromiseScheduler` (09:15 — bugungi va'da eslatmasi; 09:45 — o'tgan va'dalarni KEPT/BROKEN baholash + ikkala tomonga xabar). Kirish: mijoz qarz kartasi "🤝 Va'da berish" (`ClientHandler.clientDebtButtons`), sotuvchi "📥 So'rovlar" ostidagi "🤝 Va'dalar" (`KeyboardFactory.sellerRequestExtras`).
+- **E'tiroz (dispute)**: `entity/Dispute` (OPEN/ACCEPTED/REJECTED, resolutionNote) + `DisputeRepository` + `DisputeService` + `callback/common/DisputeCallbackHandler` (`etiroz:new:/list/ok:/rej:`) + `conversation/DisputeConversationFlow` (`ETIROZ_REASON:`, `ETIROZ_REJ_REASON:`). Sotuvchi qabul qilsa mavjud ✏️ tahrirlash bilan tuzatadi; rad etsa sabab mijozga boradi. Audit: `DISPUTE_ACCEPT`/`DISPUTE_REJECT`.
+- **Excel eksport + zaxira nusxa**: `service/ExcelExportService` (Apache POI; sotuvchi: Qarzlar/Mijozlar/To'lovlar-90kun varaqlari; admin: Do'konlar) + `callback/common/ExcelCallbackHandler` (`xls:debts` sotuvchi, `xls:admin` admin) + `service/BackupService` (butun baza JSON→ZIP, `@Transactional(readOnly)`) + `callback/admin/BackupCallbackHandler` (`backup:run`) + `scheduler/WeeklyReportScheduler` (dushanba 08:00 sotuvchilarga avto-Excel). Kirish: sotuvchi "📊 Hisobot" ostidagi "📥 Excel"; admin "⚙️ Sozlamalar" ostidagi `KeyboardFactory.adminSettingsActions`.
+- **To'lovni bekor qilish**: `service/PaymentUndoService` + `callback/seller/PaymentUndoCallbackHandler` (`payundo:ask:<debtId>` → tasdiq → `payundo:yes:<paymentId>` / `payundo:no`). Faqat ENG OXIRGI to'lov, 24 soat ichida, o'z do'koni; qoldiq/holat qayta hisoblanadi (CANCELLED pasaytirilmaydi), mijozga xabar, audit `PAYMENT_UNDO`. Kirish: `KeyboardFactory.debtActions` "↩️ To'lovni qaytarish".
+- 🐞 **Fix**: `Menus.MENU_KEYS` ga `menu.seller.analytics`/`menu.admin.analytics` qo'shildi — ilgari RU/EN foydalanuvchilarda "📈 Analitika" tugmasi ishlamasdi.
+- **Yangi Maven dep**: Apache POI `poi-ooxml` 5.2.5. ⚠️ Birinchi build ONLINE bo'lishi kerak (POI transitiv deplari `~/.m2` keshga tushishi uchun), keyin `mvn -o` yana ishlaydi.
+- **Testlar**: `src/test/java/com/qarzbot/service/{Promise,Dispute,PaymentUndo,ExcelExport}ServiceTest.java` — sof JUnit 5 + Mockito (Spring kontekstisiz, DB'siz).
+
 > ⚙️ DevOps: alohida git repo, `dev`/`prod` branch, GitHub Actions CI (`mvn verify` + vite) + CD (Docker → GHCR, self-hosted deploy `if vars.ENABLE_SELF_HOSTED_DEPLOY`). Maxfiy qiymatlar `.secrets.yml` (gitignore) / `.env` / GitHub Secrets'da. **Tez compile-gate**: hostda JDK17 (`~/.jdks/corretto-17.0.16`) + offline `mvn -o clean compile` (deps `~/.m2` kesh) — Docker/proxy ortidagi TLS muammosini chetlab o'tadi.
+>
+> 🐳 **Docker — to'liq stack bitta buyruq**: `start.ps1` (Windows) / `start.sh` (Linux) — jar'ni host'da yig'adi (`mvn -o` → online fallback), frontend `dist`'ni yig'adi, so'ng `docker compose up -d --build`. Compose'da 3 servis: `db` (postgres:16-alpine, host porti ochilmagan), `app` (runtime-only image, tayyor jar; healthcheck = bash `/dev/tcp`, chunki temurin'da curl yo'q; `TZ=Asia/Tashkent` — scheduler'lar uchun), `web` (nginx:1.27-alpine, tayyor `frontend/dist` + `/api` proxy → `app:8080`, host port `WEB_PORT`, default 3000). Konteyner ichida Maven/npm ISHLATILMAYDI (TLS proxy → PKIX). Frontend'ning o'z `frontend/.dockerignore` bor (faqat `dist` + `nginx.conf` kiradi).
 
 ## Web admin panel
 

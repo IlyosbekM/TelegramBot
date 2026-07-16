@@ -153,6 +153,10 @@ public class ClientHandler {
                 InlineKeyboardButton.builder().text("🧾 PDF").callbackData("pdf:debt:" + debtId).build(),
                 InlineKeyboardButton.builder().text("📷 QR").callbackData("qr:debt:" + debtId).build()
         ));
+        rows.add(new InlineKeyboardRow(
+                InlineKeyboardButton.builder().text(loc.t(client, "client.btn_promise")).callbackData("vada:new:" + debtId).build(),
+                InlineKeyboardButton.builder().text(loc.t(client, "client.btn_dispute")).callbackData("etiroz:new:" + debtId).build()
+        ));
         return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 

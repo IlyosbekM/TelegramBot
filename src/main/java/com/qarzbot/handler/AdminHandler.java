@@ -161,7 +161,12 @@ public class AdminHandler {
                 sellers,
                 clients,
                 allShops.size());
-        messenger.replyMarkdown(message, text);
+        messenger.execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(text)
+                .parseMode("Markdown")
+                .replyMarkup(KeyboardFactory.adminSettingsActions())
+                .build());
     }
 
     private String formatUserLine(BotUser u, String roleLabel) {

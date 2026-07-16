@@ -148,7 +148,12 @@ public class SellerViewService {
             }
         }
 
-        messenger.replyMarkdown(message, sb.toString());
+        messenger.execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(sb.toString())
+                .parseMode("Markdown")
+                .replyMarkup(KeyboardFactory.singleInline("📥 Excel yuklab olish", "xls:debts"))
+                .build());
     }
 
     // "📥 So'rovlar" — pending membership va payment request so'rovlari
@@ -157,7 +162,11 @@ public class SellerViewService {
         List<PaymentRequest> pendingPayments = paymentRequestService.pendingForShop(shop);
 
         if (pendingMemberships.isEmpty() && pendingPayments.isEmpty()) {
-            messenger.reply(message, "Yangi so'rov yo'q.");
+            messenger.execute(SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text("Yangi so'rov yo'q.\n\nQo'shimcha bo'limlar:")
+                    .replyMarkup(KeyboardFactory.sellerRequestExtras())
+                    .build());
             return;
         }
 
@@ -181,6 +190,12 @@ public class SellerViewService {
                     .replyMarkup(KeyboardFactory.acceptReject("payok:", "payno:", r.getId()))
                     .build());
         }
+
+        messenger.execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text("Qo'shimcha bo'limlar:")
+                .replyMarkup(KeyboardFactory.sellerRequestExtras())
+                .build());
     }
 
     // "🧾 Tarix" — audit log
